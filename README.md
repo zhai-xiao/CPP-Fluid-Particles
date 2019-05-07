@@ -4,10 +4,9 @@ This repository contains my own implementation of several Smoothed Particle Hydr
 
 ## Some Results (GIF)
 This example contains 20,736 particles and is timed on a Windows PC with i5-6500 CPU, GTX 1070 GPU and CUDA 8.0 installed.  
-From left to right:   
-WCSPH, dt = 0.001 s, avg performance = 4.4 ms/frame (227 FPS)  
-DFSPH, dt = 0.004 s, avg performance = 23.0 ms/frame (43.4 FPS)  
-PBD, dt = 0.004 s,  avg performance = 11.3 ms/frame (88.5 FPS)
+Left: WCSPH, dt = 0.001 s, avg performance = 4.4 ms/frame (227 FPS)  
+Middle: DFSPH, dt = 0.004 s, avg performance = 23.0 ms/frame (43.4 FPS)  
+Right: PBD, dt = 0.004 s,  avg performance = 11.3 ms/frame (88.5 FPS)
 ![example](example.gif)
 
 ## Requirements
@@ -15,7 +14,8 @@ PBD, dt = 0.004 s,  avg performance = 11.3 ms/frame (88.5 FPS)
 * CUDA
 * OpenGL (normally comes with CUDA Samples)
 
-Due to the use of several C++ lambda functions in Thrust calls, it's necessary to specify '--expt-extended-lambda' on the nvcc compile command line. I used Visual Studio 2019 Preview and CUDA 10.1 to develop the code on a Windows PC with an Nvidia GTX 980 Ti GPU. I also tested the code (without any changes) on another Windows PC with an Nvidia GTX 1070 GPU and CUDA 8.0 installed. Different platforms may need changes on the code.
+&#x1F536;__Due to the use of several C++ lambda functions in Thrust calls, it's necessary to specify '--expt-extended-lambda' on the nvcc compile command line. Besides, the helper_math.h used in the code can be found in CUDA Samples along with the OpenGL headers.__&#x1F536;  
+I used Visual Studio 2019 Preview and CUDA 10.1 to develop the code on a Windows PC with an Nvidia GTX 980 Ti GPU. I also tested the code (without any changes) on another Windows PC with an Nvidia GTX 1070 GPU and CUDA 8.0 installed. Different platforms may need changes on the code.
 
 ## Brief Description of the Program
 ### Controls  
