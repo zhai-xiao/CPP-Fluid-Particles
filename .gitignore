@@ -1,0 +1,6 @@
+build/*
+*.gzip
+*.zip
+*.tar
+note.txt
+

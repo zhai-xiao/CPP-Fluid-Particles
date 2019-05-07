@@ -15,9 +15,10 @@ set(CUDA_NVCC_FLAGS
 	"-gencode;arch=compute_61;code=sm_61;" 
 	"-gencode;arch=compute_75;code=sm_75;" # GTX 2080 Ti
 	)
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda")
 
-include_directories(${PROJECT_SOURCE_DIR}/external/)
-include_directories(${PROJECT_SOURCE_DIR}/external/include)
-link_directories(${PROJECT_SOURCE_DIR}/external/lib/)
+set(CUDASAMPLESROOT $ENV{NVCUDASAMPLES_ROOT})
+message("cuda samples root ${CUDASAMPLESROOT}")
+include_directories(${CUDASAMPLESROOT}/common/inc)
+link_directories(${CUDASAMPLESROOT}/common/lib/x64/)
+
 add_subdirectory(src)
