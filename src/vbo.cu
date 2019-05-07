@@ -31,7 +31,6 @@ __global__ void generate_dots_CUDA(float3* dot, float3* posColor, float3* pos, f
 	if (i >= num) return;
 
 	dot[i] = pos[i];
-	float color = density[i];
 	if (density[i] < 0.75f)	{
 		posColor[i] = make_float3(0.34, 0.46, 0.7);
 	}

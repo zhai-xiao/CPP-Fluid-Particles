@@ -1,8 +1,6 @@
 set(shaderfile particles.frag particles.vert)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${shaderfile}
 	DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-
 set(headers
 	BaseSolver.h
 	BasicSPHSolver.h
@@ -15,7 +13,8 @@ set(headers
 	SPHParticles.h
 	SPHSystem.h
 	CUDAFunctions.cuh
-		)
+	)
+	
 set(source
 	BasicSPHSolver.cu
 	DFSPHSolver.cu
