@@ -67,7 +67,7 @@ public:
 protected:
 	void predict(std::shared_ptr<SPHParticles>& fluids, float dt, float3 G, float3 spaceSize);
 
-	//overwriteand hide the project function in BasicSPHSolver
+	//overwrite and hide the project function in BasicSPHSolver
 	virtual int project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
 		const float rho0, const int3 cellSize, const float3 spaceSize, const float cellLength, 
