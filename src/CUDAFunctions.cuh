@@ -20,37 +20,37 @@
 #include <helper_math.h>
 #include "global.h"
 
-static inline __device__ float cubic_spline_kernel(float r, float radius)
+static inline __device__ float cubic_spline_kernel(const float r, const float radius)
 {
-	float q = 2.0f * fabs(r) / radius;
+	const auto q = 2.0f * fabs(r) / radius;
 	return (q < EPSILON) ? 0.0f :
 		((q) <= 1.0f ? (powf(2.0f - q, 3) - 4.0f * powf(1.0f - q, 3)) :
 		(q) <= 2.0f ? (powf(2.0f - q, 3)) :
 			0.0f) / (4.0f * PI * powf(radius, 3));
 }
 
-static inline __device__ float3 cubic_spline_kernel_gradient(float3 r, float radius)
+static inline __device__ float3 cubic_spline_kernel_gradient(const float3 r, const float radius)
 {
-	float q = 2.0f * length(r) / radius;
+	const auto q = 2.0f * length(r) / radius;
 	return
 		((q) <= 1.0f ? -(3.0f * (2.0f - q) * (2.0f - q) - 12.0f * (1.0f - q) * (1.0f - q)) :
 		(q) <= 2.0f ? -(3.0f * (2.0f - q) * (2.0f - q)) :
 			0.0f) / (2.0f * PI * powf(radius, 4)) * r / fmaxf(EPSILON, length(r));
 }
 
-static inline __device__ float viscosity_kernel_laplacian(float r, float radius) {
+static inline __device__ float viscosity_kernel_laplacian(const float r, const float radius) {
 	return (r <= radius) ? (45.0f * (radius - r) / (PI * powf(radius, 6))) : 0.0f;
 }
 
-static __global__ void countingInCell_CUDA(int* cellStart, int* particle2cell, int num)
+static __global__ void countingInCell_CUDA(int* cellStart, int* particle2cell, const int num)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
 	atomicAdd(&cellStart[particle2cell[i]], 1);
 	return;
 }
 
-static inline __device__ int particlePos2cellIdx(int3 pos, int3 cellSize)
+static inline __device__ int particlePos2cellIdx(const int3 pos, const int3 cellSize)
 {
 	// return (cellSize.x*cellSize.y*cellSize.z) if the particle is out of the grid
 	return (pos.x >= 0 && pos.x < cellSize.x && pos.y >= 0 && pos.y < cellSize.y && pos.z >= 0 && pos.z < cellSize.z) ?
@@ -58,9 +58,9 @@ static inline __device__ int particlePos2cellIdx(int3 pos, int3 cellSize)
 		: (cellSize.x * cellSize.y * cellSize.z);
 }
 
-static __global__ void mapParticles2Cells_CUDA(int* particles2cells, float3* pos, float cellLength, int3 cellSize, int num)
+static __global__ void mapParticles2Cells_CUDA(int* particles2cells, float3* pos, const float cellLength, const int3 cellSize, const int num)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
 	particles2cells[i] = particlePos2cellIdx(make_int3(pos[i] / cellLength), cellSize);
 	return;
@@ -68,9 +68,9 @@ static __global__ void mapParticles2Cells_CUDA(int* particles2cells, float3* pos
 
 // smoothing kernel in [2013][SIGGRAPH ASIA][Versatile Surface Tension and Adhesion for SPH Fluids].
 // it's already been 3D spherical normalized.
-inline __device__ float3 surface_tension_kernel_gradient(float3 r, float radius)
+inline __device__ float3 surface_tension_kernel_gradient(float3 r, const float radius)
 {
-	float x = length(r);
+	const auto x = length(r);
 	return
 		(x < EPSILON) ? make_float3(0.0f) : (
 			2.0f * x <= radius ? 2.0f * powf((radius - x), 3) * powf(x,3) - 0.0156f * powf(radius, 6) :

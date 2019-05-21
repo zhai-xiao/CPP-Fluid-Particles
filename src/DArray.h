@@ -21,7 +21,7 @@
 template <typename T>
 class DArray {
 public:
-	DArray(const unsigned int length) :
+	explicit DArray(const unsigned int length) :
 		_length(length),
  		d_array([length]() {
 		T* ptr; 
@@ -40,7 +40,8 @@ public:
 	}
 
 	unsigned int length() const { return _length; }
-	void clear(){ CUDA_CALL(cudaMemset(this->addr(), 0, sizeof(T) * this->length())); }
+	void clear()
+	{ CUDA_CALL(cudaMemset(this->addr(), 0, sizeof(T) * this->length())); }
 	
 	~DArray() {	d_array.~shared_ptr(); }
 

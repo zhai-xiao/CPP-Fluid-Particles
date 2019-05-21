@@ -24,7 +24,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <GL\glew.h>
+#include <GL/glew.h>
 
 namespace ShaderUtility {
 	void* initGLEW()
@@ -46,7 +46,6 @@ namespace ShaderUtility {
 
 	char* loadFile(char *fname, GLint &fSize)
 	{
-		std::ifstream::pos_type size;
 		char * memblock;
 		std::string text;
 
@@ -54,8 +53,8 @@ namespace ShaderUtility {
 		std::ifstream file (fname, std::ios::in| std::ios::binary| std::ios::ate);
 		if (file.is_open())
 		{
-			size = file.tellg();
-			fSize = (GLuint) size;
+			const auto size = file.tellg();
+			fSize = GLuint(size);
 			memblock = new char [size];
 			file.seekg (0, std::ios::beg);
 			file.read (memblock, size);
@@ -74,11 +73,10 @@ namespace ShaderUtility {
 	// printShaderInfoLog
 	// From OpenGL Shading Language 3rd Edition, p215-216
 	// Display (hopefully) useful error messages if shader fails to compile
-	void printShaderInfoLog(GLint shader)
+	void printShaderInfoLog(const GLint shader)
 	{
-		int infoLogLen = 0;
-		int charsWritten = 0;
-		GLchar *infoLog;
+		auto infoLogLen = 0;
+		auto charsWritten = 0;
 
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 
@@ -86,7 +84,7 @@ namespace ShaderUtility {
 
 		if (infoLogLen > 0)
 		{
-			infoLog = new GLchar[infoLogLen];
+			const auto infoLog = new GLchar[infoLogLen];
 			// error check for fail to allocate memory omitted
 			glGetShaderInfoLog(shader,infoLogLen, &charsWritten, infoLog);
 			std::cout << "InfoLog:" << std::endl << infoLog << std::endl;
@@ -96,11 +94,10 @@ namespace ShaderUtility {
 		// should additionally check for OpenGL errors here
 	}
 
-	void printLinkInfoLog(GLint prog) 
+	void printLinkInfoLog(const GLint prog) 
 	{
-		int infoLogLen = 0;
-		int charsWritten = 0;
-		GLchar *infoLog;
+		auto infoLogLen = 0;
+		auto charsWritten = 0;
 
 		glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &infoLogLen);
 
@@ -108,7 +105,7 @@ namespace ShaderUtility {
 
 		if (infoLogLen > 0)
 		{
-			infoLog = new GLchar[infoLogLen];
+			const auto infoLog = new GLchar[infoLogLen];
 			// error check for fail to allocate memory omitted
 			glGetProgramInfoLog(prog,infoLogLen, &charsWritten, infoLog);
 			std::cout << "InfoLog:" << std::endl << infoLog << std::endl;
@@ -117,18 +114,14 @@ namespace ShaderUtility {
 	}
 
 	shaders_t loadShaders(char * vert_path, char * frag_path) {
-		GLuint f, v;
-
-		char *vs,*fs;
-
-		v = glCreateShader(GL_VERTEX_SHADER);
-		f = glCreateShader(GL_FRAGMENT_SHADER);	
+		const auto v = glCreateShader(GL_VERTEX_SHADER);
+		const auto f = glCreateShader(GL_FRAGMENT_SHADER);	
 
 		// load shaders & get length of each
 		GLint vlen;
 		GLint flen;
-		vs = loadFile(vert_path,vlen);
-		fs = loadFile(frag_path,flen);
+		const auto vs = loadFile(vert_path, vlen);
+		const auto fs = loadFile(frag_path, flen);
 
 		const char * vv = vs;
 		const char * ff = fs;
@@ -163,7 +156,7 @@ namespace ShaderUtility {
 		return out;
 	}
 
-	void attachAndLinkProgram( GLuint program, shaders_t shaders) {
+	void attachAndLinkProgram(const GLuint program, const shaders_t shaders) {
 		glAttachShader(program, shaders.vertex);
 		glAttachShader(program, shaders.fragment);
 

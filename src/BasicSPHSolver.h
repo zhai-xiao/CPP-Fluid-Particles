@@ -27,8 +27,8 @@ public:
 	explicit BasicSPHSolver(const int num) :bufferFloat3(num) {}
 	virtual ~BasicSPHSolver() { bufferFloat3.~DArray(); }
 protected:
-	virtual void force(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 G) final;
-	virtual void advect(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize) final;
+	void force(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 G) override final;
+	void advect(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize) override final;
 	virtual void project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float rho0, const float stiff,
 		const int3 cellSize, const float cellLength, const float radius, const float dt);
@@ -41,8 +41,8 @@ protected:
 		const float dt, const float surfaceTensionIntensity, const float airPressure);
 private:
 	DArray<float3> bufferFloat3;
-	void computeDensity(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundries,
-		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const int3 cellSize, const float cellLength, const float radius);
+	void computeDensity(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const int3 cellSize, const float cellLength, const float radius) const;
 	void surfaceDetection(DArray<float3>& colorGrad, const std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
 		const float rho0, const float rhoB, const int3 cellSize, const float cellLength, const float radius);

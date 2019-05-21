@@ -17,9 +17,9 @@
 
 #pragma once
 
-class SPHParticles : public Particles {
+class SPHParticles final : public Particles {
 public:
-	SPHParticles::SPHParticles(std::vector<float3>& p)
+	explicit SPHParticles::SPHParticles(std::vector<float3>& p)
 		:Particles(p),
 		pressure(p.size()),
 		density(p.size()),

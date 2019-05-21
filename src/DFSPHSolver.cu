@@ -54,8 +54,8 @@ void DFSPHSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shared_
 	// step 4: non-pressure forces
 	force(fluids, dt, G);
 	diffuse(fluids, cellStartFluid, cellSize,
-		cellLength, rho0, radius,
-		visc, dt);
+	        cellLength, rho0, radius,
+	        visc, dt);
 	if (surfaceTensionIntensity > EPSILON || airPressure > EPSILON)
 		handleSurface(fluids, boundaries,
 			cellStartFluid, cellStartBoundary,
@@ -72,39 +72,39 @@ void DFSPHSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shared_
 	advect(fluids, dt, spaceSize);
 }
 
-__device__ void contributeDensityError_fluid(float& e, int i, float3* pos, float3* vel, float* mass, int j, int cellEnd, float radius)
+__device__ auto contributeDensityError_fluid(float& e, const int i, float3* pos, float3* vel, float* mass, int j, const int cellEnd, const float radius) -> void
 {
 	while (j < cellEnd)
 	{
 		e += mass[j] * dot((vel[i] - vel[j]), cubic_spline_kernel_gradient(pos[i] - pos[j], radius));
-		j++;
+		++j;
 	}
 	return;
 }
 
-__device__ void contributeDensityError_boundary(float& e, float3 vel_i, float3 pos_i, float3* pos, float* mass, int j, int cellEnd, float radius)
+__device__ void contributeDensityError_boundary(float& e, const float3 vel_i, const float3 pos_i, float3* pos, float* mass, int j, const int cellEnd, const float radius)
 {
 	while (j < cellEnd)
 	{
 		e += mass[j] * dot(vel_i, cubic_spline_kernel_gradient(pos_i - pos[j], radius));
-		j++;
+		++j;
 	}
 	return;
 }
 
-__global__ void computeDensityError_CUDA(float* error, float* stiff, float3* posFluid, float3* velFluid, float* massFluid, int num, 
-	float* density, float* alpha, int* cellStartFluid, int3 cellSize, float cellLength, float dt, float rho0, float radius,
+__global__ void computeDensityError_CUDA(float* error, float* stiff, float3* posFluid, float3* velFluid, float* massFluid, const int num, 
+	float* density, float* alpha, int* cellStartFluid, const int3 cellSize, const float cellLength, const float dt, const float  rho0, const float radius,
 	float3* posBoundary, float* massBoundary, int* cellStartBoundary)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
-	float e = 0.0f;
-	int cellID;
+	auto e = 0.0f;
 	__syncthreads();
 #pragma unroll
-	for (int m = 0; m < 27; __syncthreads(), m++)
+	for (auto m = 0; m < 27; __syncthreads(), ++m)
 	{
-		cellID = particlePos2cellIdx(make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
+		const auto cellID = particlePos2cellIdx(
+			make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
 		if (cellID == (cellSize.x * cellSize.y * cellSize.z)) continue;
 		contributeDensityError_fluid(e, i, posFluid, velFluid, massFluid, cellStartFluid[cellID], cellStartFluid[cellID + 1], radius);
 		contributeDensityError_boundary(e, velFluid[i], posFluid[i], posBoundary, massBoundary, cellStartBoundary[cellID], cellStartBoundary[cellID + 1], radius);
@@ -116,39 +116,39 @@ __global__ void computeDensityError_CUDA(float* error, float* stiff, float3* pos
 	return;
 }
 
-__device__ void contributeAcceleration_fluid(float3& a, int i, float3* pos, float* mass, float* stiff, int j, int cellEnd, float radius)
+__device__ void contributeAcceleration_fluid(float3& a, const int i, float3* pos, float* mass, float* stiff, int j, const int cellEnd, const float radius)
 {
 	while (j < cellEnd)
 	{
 		a += mass[j] * (stiff[i] + stiff[j]) * cubic_spline_kernel_gradient(pos[i] - pos[j], radius);
-		j++;
+		++j;
 	}
 	return;
 }
 
-__device__ void contributeAcceleration_boundary(float3& a, float3 pos_i, float3* pos, float* mass, float stiff_i, int j, int cellEnd, float radius)
+__device__ void contributeAcceleration_boundary(float3& a, const float3 pos_i, float3* pos, float* mass, const float stiff_i, int j, const int cellEnd, const float radius)
 {
 	while (j < cellEnd)
 	{
 		a += mass[j] * (stiff_i)* cubic_spline_kernel_gradient(pos_i - pos[j], radius);
-		j++;
+		++j;
 	}
 	return;
 }
 
-__global__ void correctDensityError_CUDA(float3* velFluid, float3* posFluid, float* massFluid, float* stiff, int num, 
-	int* cellStartFluid, int3 cellSize,
-	float3* posBoundary, float* massBoundary, int* cellStartBoundary, float cellLength, float dt, float radius)
+__global__ void correctDensityError_CUDA(float3* velFluid, float3* posFluid, float* massFluid, float* stiff, const int num, 
+	int* cellStartFluid, const int3 cellSize,
+	float3* posBoundary, float* massBoundary, int* cellStartBoundary, const float cellLength, const float dt, const float radius)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
-	float3 a = make_float3(0.0f);
-	int cellID;
+	auto a = make_float3(0.0f);
 	__syncthreads();
 #pragma unroll
-	for (int m = 0; m < 27; __syncthreads(), m++)
+	for (auto m = 0; m < 27; __syncthreads(), ++m)
 	{
-		cellID = particlePos2cellIdx(make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
+		const auto cellID = particlePos2cellIdx(
+			make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
 		if (cellID == (cellSize.x * cellSize.y * cellSize.z)) continue;
 		contributeAcceleration_fluid(a, i, posFluid, massFluid, stiff, cellStartFluid[cellID], cellStartFluid[cellID + 1], radius);
 		contributeAcceleration_boundary(a, posFluid[i], posBoundary, massBoundary, stiff[i], cellStartBoundary[cellID], cellStartBoundary[cellID + 1], radius);
@@ -164,8 +164,8 @@ int DFSPHSolver::project(std::shared_ptr<SPHParticles>& fluids, const std::share
 	const float errorThreshold, const int maxIter)
 {
 	int num = fluids->size();
-	float totalError = std::numeric_limits<float>::max();
-	int iter = 0;
+	auto totalError = std::numeric_limits<float>::max();
+	auto iter = 0;
 
 	// gather warm stiffness from last time step using particle2cell table
 	CUDA_CALL(cudaMemcpy(bufferInt.addr(), fluids->getParticle2Cell(), sizeof(int) * num, cudaMemcpyDeviceToDevice));
@@ -202,7 +202,7 @@ int DFSPHSolver::project(std::shared_ptr<SPHParticles>& fluids, const std::share
 			bufferFloat.addr(),
 			denWarmStiff.addr(),
 			thrust::plus<float>());
-		iter++;
+		++iter;
 		if (iter >= 2) {
 			totalError = thrust::reduce(thrust::device, error.addr(), error.addr() + num, 0.0f, ThrustHelper::abs_plus<float>());
 		}
@@ -210,7 +210,7 @@ int DFSPHSolver::project(std::shared_ptr<SPHParticles>& fluids, const std::share
 	return iter;
 }
 
-__device__ void contributeDensityAlpha(float& density, float3& gradientSum, float& sampleLambda, float3 pos_i, float3* pos, float* mass, int j, int cellEnd, bool isBoundary, float radius)
+__device__ void contributeDensityAlpha(float& density, float3& gradientSum, float& sampleLambda, const float3 pos_i, float3* pos, float* mass, int j, const int cellEnd, const bool isBoundary, const float radius)
 {
 	while (j < cellEnd)
 	{
@@ -218,27 +218,27 @@ __device__ void contributeDensityAlpha(float& density, float3& gradientSum, floa
 		gradientSum += mass[j] * cubic_spline_kernel_gradient(pos_i - pos[j], radius);
 		if (!isBoundary)
 			sampleLambda += dot(mass[j] * cubic_spline_kernel_gradient(pos_i - pos[j], radius), mass[j] * cubic_spline_kernel_gradient(pos_i - pos[j], radius));
-		j++;
+		++j;
 	}
 	return;
 }
 
 __global__ void computeDensityAlpha_CUDA(float* density, float* alpha, 
-	float3* posFluid, float* massFluid, int num, int* cellStartFluid, int3 cellSize,
+	float3* posFluid, float* massFluid, const int num, int* cellStartFluid, const int3 cellSize,
 	float3* posBoundary, float* massBoundary, int* cellStartBoundary,
-	float cellLength, float radius)
+	const float cellLength, const float radius)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
-	float3 gradientSum = make_float3(0.0f);
-	float sampleLambda = 0.0f;
-	float den = 0.0f;
-	int cellID;
+	auto gradientSum = make_float3(0.0f);
+	auto sampleLambda = 0.0f;
+	auto den = 0.0f;
 	__syncthreads();
 #pragma unroll
-	for (int m = 0; m < 27; __syncthreads(), m++)
+	for (auto m = 0; m < 27; __syncthreads(), ++m)
 	{
-		cellID = particlePos2cellIdx(make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
+		const auto cellID = particlePos2cellIdx(
+			make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
 		if (cellID == (cellSize.x * cellSize.y * cellSize.z)) continue;
 		contributeDensityAlpha(den, gradientSum, sampleLambda, posFluid[i], posFluid, massFluid, cellStartFluid[cellID], cellStartFluid[cellID + 1], false, radius);
 		contributeDensityAlpha(den, gradientSum, sampleLambda, posFluid[i], posBoundary, massBoundary, cellStartBoundary[cellID], cellStartBoundary[cellID + 1], true, radius);
@@ -258,41 +258,41 @@ void DFSPHSolver::computeDensityAlpha(std::shared_ptr<SPHParticles>& fluids, con
 		cellLength, radius);
 }
 
-__device__ void contributeDivergenceError_fluid(float& e, int i, float3* pos, float3* vel, float* mass, int j, int cellEnd, float radius)
+__device__ void contributeDivergenceError_fluid(float& e, const int i, float3* pos, float3* vel, float* mass, int j, const int cellEnd, const float radius)
 {
 	while (j < cellEnd)
 	{
 		e += mass[j] * dot((vel[i] - vel[j]), cubic_spline_kernel_gradient(pos[i] - pos[j], radius));
-		j++;
+		++j;
 	}
 	return;
 }
 
-__device__ void contributeDivergenceError_boundary(float& e, float3 pos_i, float3 vel_i, float3* pos, float* mass, int j, int cellEnd, float radius)
+__device__ void contributeDivergenceError_boundary(float& e, const float3 pos_i, const float3 vel_i, float3* pos, float* mass, int j, const int cellEnd, const float radius)
 {
 	while (j < cellEnd)
 	{
 		e += mass[j] * dot(vel_i, cubic_spline_kernel_gradient(pos_i - pos[j], radius));
-		j++;
+		++j;
 	}
 	return;
 }
 
 __global__ void computeDivergenceError_CUDA(float* error, float* stiff, 
-	float3* posFluid, float3* velFluid, float* massFluid, float* density, int num, 
-	float* alpha, int* cellStartFluid, int3 cellSize,
+	float3* posFluid, float3* velFluid, float* massFluid, float* density, const int num, 
+	float* alpha, int* cellStartFluid, const int3 cellSize,
 	float3* posBoundary, float* massBoundary, int* cellStartBoundary,
-	float cellLength, float dt, float rho0, float radius)
+	const float cellLength, const float dt, const float rho0, const float radius)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
-	int cellID;
-	float e = 0.0f;
+	auto e = 0.0f;
 	__syncthreads();
 #pragma unroll
-	for (int m = 0; m < 27; __syncthreads(), m++)
+	for (auto m = 0; m < 27; __syncthreads(), ++m)
 	{
-		cellID = particlePos2cellIdx(make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
+		const auto cellID = particlePos2cellIdx(
+			make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
 		if (cellID == (cellSize.x * cellSize.y * cellSize.z)) continue;
 		contributeDivergenceError_fluid(e, i, posFluid, velFluid, massFluid, cellStartFluid[cellID], cellStartFluid[cellID + 1], radius);
 		contributeDivergenceError_boundary(e, posFluid[i], velFluid[i], posBoundary, massBoundary, cellStartBoundary[cellID], cellStartBoundary[cellID + 1], radius);
@@ -305,19 +305,19 @@ __global__ void computeDivergenceError_CUDA(float* error, float* stiff,
 	return;
 }
 
-__global__ void correctDivergenceError_CUDA(float3* velFluid, float3* posFluid, float* massFluid, float* stiff, int num, 
-	int* cellStartFluid, int3 cellSize,
-	float3* posBoundary, float* massBoundary, int* cellStartBoundary, float cellLength, float radius)
+__global__ void correctDivergenceError_CUDA(float3* velFluid, float3* posFluid, float* massFluid, float* stiff, const int num, 
+	int* cellStartFluid, const int3 cellSize,
+	float3* posBoundary, float* massBoundary, int* cellStartBoundary, const float cellLength, const float radius)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
-	float3 a = make_float3(0.0f);
-	int cellID;
+	auto a = make_float3(0.0f);
 	__syncthreads();
 #pragma unroll
-	for (int m = 0; m < 27; __syncthreads(), m++)
+	for (auto m = 0; m < 27; __syncthreads(), ++m)
 	{
-		cellID = particlePos2cellIdx(make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
+		const auto cellID = particlePos2cellIdx(
+			make_int3(posFluid[i] / cellLength) + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
 		if (cellID == (cellSize.x * cellSize.y * cellSize.z)) continue;
 		contributeAcceleration_fluid(a, i, posFluid, massFluid, stiff, cellStartFluid[cellID], cellStartFluid[cellID + 1], radius);
 		contributeAcceleration_boundary(a, posFluid[i], posBoundary, massBoundary, stiff[i], cellStartBoundary[cellID], cellStartBoundary[cellID + 1], radius);
@@ -334,8 +334,8 @@ int DFSPHSolver::correctDivergenceError(std::shared_ptr<SPHParticles>& fluids, c
 	const float errorThreshold, const int maxIter)
 {
 	int num = fluids->size();
-	float totalError = std::numeric_limits<float>::max();
-	int iter = 0;
+	auto totalError = std::numeric_limits<float>::max();
+	auto iter = 0;
 
 	// bufferFloat again act as the stiffness array
 	computeDivergenceError_CUDA <<<(num-1)/block_size+1, block_size>>> (error.addr(), bufferFloat.addr(), 
@@ -356,7 +356,7 @@ int DFSPHSolver::correctDivergenceError(std::shared_ptr<SPHParticles>& fluids, c
 			alpha.addr(), cellStartFluid.addr(), cellSize,
 			boundaries->getPosPtr(), boundaries->getMassPtr(), cellStartBoundary.addr(),
 			cellLength, dt, rho0, radius);
-		iter++;
+		++iter;
 		totalError = thrust::reduce(thrust::device, error.addr(), error.addr() + num, 0.0f, ThrustHelper::abs_plus<float>());
 	}
 	return iter;

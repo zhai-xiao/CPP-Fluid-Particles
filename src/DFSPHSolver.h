@@ -17,7 +17,7 @@
 
 #pragma once
 
-class DFSPHSolver : public BasicSPHSolver {
+class DFSPHSolver final : public BasicSPHSolver {
 public:
 	virtual void step(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float3 spaceSize,
@@ -33,10 +33,10 @@ public:
 		bufferFloat(num),
 		bufferInt(num),
 		error(num),
+		denWarmStiff(num),
 		densityErrorThreshold(defaultDensityErrorThreshold),
-		divergenceErrorThreshold(defaultDivergenceErrorThreshold),
-		maxIter(defaultMaxIter), 
-		denWarmStiff(num){}
+		divergenceErrorThreshold(defaultDivergenceErrorThreshold), 
+		maxIter(defaultMaxIter){}
 	virtual ~DFSPHSolver() {
 		alpha.~DArray();
 		bufferFloat.~DArray();

@@ -71,12 +71,12 @@ namespace fluid_solver {
 	enum { SPH, DFSPH, PBD};
 }
 
-void initSPHSystem(int solver = fluid_solver::PBD) {
+void initSPHSystem(const int solver = fluid_solver::PBD) {
 	// initiate fluid particles
 	std::vector<float3> pos;
-	for (int i = 0; i < 36; ++i) {
-		for (int j = 0; j < 24; ++j) {
-			for (int k = 0; k < 24; ++k) {
+	for (auto i = 0; i < 36; ++i) {
+		for (auto j = 0; j < 24; ++j) {
+			for (auto k = 0; k < 24; ++k) {
 				auto x = make_float3(0.27f + sphSpacing * j,
 					0.10f + sphSpacing * i,
 					0.27f + sphSpacing * k);
@@ -84,13 +84,13 @@ void initSPHSystem(int solver = fluid_solver::PBD) {
 			}
 		}
 	}
-	std::shared_ptr<SPHParticles> fluidParticles = std::make_shared<SPHParticles>(pos);
+	auto fluidParticles = std::make_shared<SPHParticles>(pos);
 	// initiate boundary particles
 	pos.clear();
-	const int3 compactSize = 2 * make_int3(ceil(spaceSize.x / sphCellLength), ceil(spaceSize.y / sphCellLength), ceil(spaceSize.z / sphCellLength));
+	const auto compactSize = 2 * make_int3(ceil(spaceSize.x / sphCellLength), ceil(spaceSize.y / sphCellLength), ceil(spaceSize.z / sphCellLength));
 	// front and back
-	for (int i = 0; i < compactSize.x; ++i) {
-		for (int j = 0; j < compactSize.y; ++j) {
+	for (auto i = 0; i < compactSize.x; ++i) {
+		for (auto j = 0; j < compactSize.y; ++j) {
 			auto x = make_float3(i, j, 0) / make_float3(compactSize - make_int3(1)) * spaceSize;
 			pos.push_back(0.99f * x + 0.005f * spaceSize);
 			x = make_float3(i, j, compactSize.z - 1) / make_float3(compactSize - make_int3(1)) * spaceSize;
@@ -98,8 +98,8 @@ void initSPHSystem(int solver = fluid_solver::PBD) {
 		}
 	}
 	// top and bottom
-	for (int i = 0; i < compactSize.x; ++i) {
-		for (int j = 0; j < compactSize.z-2; ++j) {
+	for (auto i = 0; i < compactSize.x; ++i) {
+		for (auto j = 0; j < compactSize.z-2; ++j) {
 			auto x = make_float3(i, 0, j+1) / make_float3(compactSize - make_int3(1)) * spaceSize;
 			pos.push_back(0.99f * x + 0.005f * spaceSize);
 			x = make_float3(i, compactSize.y - 1, j+1) / make_float3(compactSize - make_int3(1)) * spaceSize;
@@ -107,15 +107,15 @@ void initSPHSystem(int solver = fluid_solver::PBD) {
 		}
 	}
 	// left and right
-	for (int i = 0; i < compactSize.y - 2; ++i) {
-		for (int j = 0; j < compactSize.z - 2; ++j) {
+	for (auto i = 0; i < compactSize.y - 2; ++i) {
+		for (auto j = 0; j < compactSize.z - 2; ++j) {
 			auto x = make_float3(0, i + 1, j + 1) / make_float3(compactSize - make_int3(1)) * spaceSize;
-			pos.push_back(0.99f * x + 0.005 * spaceSize);
+			pos.push_back(0.99f * x + 0.005f * spaceSize);
 			x = make_float3(compactSize.x - 1, i + 1, j + 1) / make_float3(compactSize - make_int3(1)) * spaceSize;
-			pos.push_back(0.99f * x + 0.005 * spaceSize);
+			pos.push_back(0.99f * x + 0.005f * spaceSize);
 		}
 	}
-	std::shared_ptr<SPHParticles> boundaryParticles = std::make_shared<SPHParticles>(pos);
+	auto boundaryParticles = std::make_shared<SPHParticles>(pos);
 	// initiate solver and particle system
 	switch (solver) {
 	case fluid_solver::PBD:
@@ -148,7 +148,7 @@ void createVBO(GLuint* vbo, const unsigned int length) {
 	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 
 	// initialize buffer object
-	glBufferData(GL_ARRAY_BUFFER, length, 0, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, length, nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// register buffer object with CUDA
@@ -261,7 +261,7 @@ void keyboardFunc(const unsigned char key, const int x, const int y) {
 	case 'r':
 	case 'R':
 		rot[0] = rot[1] = 0;
-		zoom = 0.35f;
+		zoom = 0.3f;
 		break;
 	case 'n':
 	case 'N':
@@ -291,11 +291,11 @@ void renderParticles(void) {
 
 
 	glBindBuffer(GL_ARRAY_BUFFER, particlesVBO);
-	glVertexPointer(3, GL_FLOAT, 0, 0);
+	glVertexPointer(3, GL_FLOAT, 0, nullptr);
 	glEnableClientState(GL_VERTEX_ARRAY);
 
 	glBindBuffer(GL_ARRAY_BUFFER, particlesColorVBO);
-	glColorPointer(3, GL_FLOAT, 0, 0);
+	glColorPointer(3, GL_FLOAT, 0, nullptr);
 	glEnableClientState(GL_COLOR_ARRAY);
 
 	glDrawArrays(GL_POINTS, 0, pSystem->size());
@@ -306,8 +306,8 @@ void renderParticles(void) {
 }
 
 void oneStep() {
-	frameId++;
-	auto milliseconds = pSystem->step();
+	++frameId;
+	const auto milliseconds = pSystem->step();
 	totalTime += milliseconds;
 	printf("Frame %d - %2.2f ms, avg time - %2.2f ms/frame (%3.2f FPS)\r", 
 		frameId%10000, milliseconds, totalTime / frameId, frameId*1000.0f/totalTime);
@@ -318,7 +318,7 @@ void displayFunc(void) {
 		oneStep();
 	}
 	////////////////////
-	glClearColor(0.9, 0.9, 0.92, 1.0);
+	glClearColor(0.9f, 0.9f, 0.92f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glViewport(0, 0, m_window_h, m_window_h);
@@ -326,7 +326,7 @@ void displayFunc(void) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(m_fov, m_window_h / m_window_h, 0.01, 100.0);
+	gluPerspective(m_fov, double(m_window_h) / double(m_window_h), 0.01, 100.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(0, 0, 1.0 / zoom, 0, 0, 0, 0, 1, 0);
@@ -334,7 +334,7 @@ void displayFunc(void) {
 	glPushMatrix();
 	glRotatef(rot[0], 1.0f, 0.0f, 0.0f);
 	glRotatef(rot[1], 0.0f, 1.0f, 0.0f);
-	glColor4f(0.7, 0.7, 0.7, 1.0);
+	glColor4f(0.7f, 0.7f, 0.7f, 1.0f);
 	glLineWidth(1.0);
 	////////////////////
 	glEnable(GL_MULTISAMPLE_ARB);
@@ -342,7 +342,7 @@ void displayFunc(void) {
 	glutSolidCube(1.0);
 	////////////////////
 	glUseProgram(m_particles_program);
-	glUniform1f(glGetUniformLocation(m_particles_program, "pointScale"), m_window_h / tanf(m_fov*0.5f*(float)PI / 180.0f));
+	glUniform1f(glGetUniformLocation(m_particles_program, "pointScale"), m_window_h / tanf(m_fov*0.5f*float(PI) / 180.0f));
 	glUniform1f(glGetUniformLocation(m_particles_program, "pointRadius"), particle_radius);
 	glEnable(GL_POINT_SPRITE_ARB);
 	glTexEnvi(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
@@ -360,35 +360,40 @@ void displayFunc(void) {
 }
 
 int main(int argc, char* argv[]) {
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
-	glutInitWindowPosition(400, 0);
-	glutInitWindowSize(m_window_h, m_window_h);
-	glutCreateWindow("");
-	glutDisplayFunc(&displayFunc);
-	glutKeyboardFunc(&keyboardFunc);
-	glutMouseFunc(&mouseFunc);
-	glutMotionFunc(&motionFunc);
+	try{
+		glutInit(&argc, argv);
+		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_MULTISAMPLE);
+		glutInitWindowPosition(400, 0);
+		glutInitWindowSize(m_window_h, m_window_h);
+		glutCreateWindow("");
+		glutDisplayFunc(&displayFunc);
+		glutKeyboardFunc(&keyboardFunc);
+		glutMouseFunc(&mouseFunc);
+		glutMotionFunc(&motionFunc);
 
-	glewInit();
-	////////////////////
-	initSPHSystem();
-	initGL();
+		glewInit();
+		////////////////////
+		initSPHSystem();
+		initGL();
 
-	std::cout << "Instructions\n";
-	std::cout << "The color indicates the density of a particle.\nMagenta means higher density, navy means lesser density.\n";
-	std::cout << "Controls\n";
-	std::cout << "Space - Start/Pause\n";
-	std::cout << "Key N - One Step Forward\n";
-	std::cout << "Key Q - Quit\n";
-	std::cout << "Key 1 - Restart Simulation Using SPH Solver\n";
-	std::cout << "Key 2 - Restart Simulation Using DFSPH Solver\n";
-	std::cout << "Key 3 - Restart Simulation Using PBD Solver\n";
-	std::cout << "Key R - Reset Viewpoint\n";
-	std::cout << "Key , - Zoom In\n";
-	std::cout << "Key . - Zoom Out\n";
-	std::cout << "Mouse Drag - Change Viewpoint\n\n";
-	////////////////////
-	glutMainLoop();
+		std::cout << "Instructions\n";
+		std::cout << "The color indicates the density of a particle.\nMagenta means higher density, navy means lesser density.\n";
+		std::cout << "Controls\n";
+		std::cout << "Space - Start/Pause\n";
+		std::cout << "Key N - One Step Forward\n";
+		std::cout << "Key Q - Quit\n";
+		std::cout << "Key 1 - Restart Simulation Using SPH Solver\n";
+		std::cout << "Key 2 - Restart Simulation Using DFSPH Solver\n";
+		std::cout << "Key 3 - Restart Simulation Using PBD Solver\n";
+		std::cout << "Key R - Reset Viewpoint\n";
+		std::cout << "Key , - Zoom In\n";
+		std::cout << "Key . - Zoom Out\n";
+		std::cout << "Mouse Drag - Change Viewpoint\n\n";
+		////////////////////
+		glutMainLoop();
+	}
+	catch (...) {
+		std::cout << "Unknown Exception at " << __FILE__ << ": line " << __LINE__ << std::endl;
+	}
 	return 0;
 }

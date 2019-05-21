@@ -50,20 +50,20 @@ SPHSystem::SPHSystem(
 	const int3 cellSize)
 	:_fluids(fluidParticles), _boundaries(boundaryParticles),
 	_solver(solver),
+	cellStartFluid(cellSize.x* cellSize.y* cellSize.z + 1),
+	cellStartBoundary(cellSize.x* cellSize.y* cellSize.z + 1),
 	_spaceSize(spaceSize),
-	_sphCellLength(sphCellLength),
 	_sphSmoothingRadius(sphSmoothingRadius),
+	_sphCellLength(sphCellLength),
 	_dt(dt),
 	_sphRho0(sphRho0),
 	_sphRhoBoundary(sphRhoBoundary),
 	_sphStiff(sphStiff),
+	_sphG(sphG),
 	_sphVisc(sphVisc),
 	_sphSurfaceTensionIntensity(sphSurfaceTensionIntensity),
 	_sphAirPressure(sphAirPressure),
-	_sphG(sphG),
 	_cellSize(cellSize),
-	cellStartFluid(cellSize.x* cellSize.y* cellSize.z + 1),
-	cellStartBoundary(cellSize.x* cellSize.y* cellSize.z + 1),
 	bufferInt(max(totalSize(), cellSize.x* cellSize.y* cellSize.z + 1))
 {
 	// step 1: init boundary particles
@@ -77,36 +77,36 @@ SPHSystem::SPHSystem(
 	step();
 }
 
-__device__ void contributeBoundaryKernel(float* sum_kernel, int i, int cellID, float3* pos, int* cellStart, int3 cellSize, float radius)
+__device__ void contributeBoundaryKernel(float* sum_kernel, const int i, const int cellID, float3* pos, int* cellStart, const int3 cellSize, const float radius)
 {
-	int j, end;
 	if (cellID == (cellSize.x * cellSize.y * cellSize.z)) return;
-	j = cellStart[cellID];	end = cellStart[cellID + 1];
+	auto j = cellStart[cellID];
+	const auto end = cellStart[cellID + 1];
 	while (j < end)
 	{
 		*sum_kernel += cubic_spline_kernel(length(pos[i] - pos[j]), radius);
-		j++;
+		++j;
 	}
 	return;
 }
 
-__global__ void computeBoundaryMass_CUDA(float* mass, float3* pos, int num, int* cellStart, int3 cellSize, float cellLength, float rhoB, float radius)
+__global__ void computeBoundaryMass_CUDA(float* mass, float3* pos, const int num, int* cellStart, const int3 cellSize, const float cellLength, const float rhoB, const float radius)
 {
-	unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	const unsigned int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
 	if (i >= num) return;
-	int3 cellPos = make_int3(pos[i] / cellLength);
-	int cellID;
+	const auto cellPos = make_int3(pos[i] / cellLength);
 #pragma unroll
-	for (int m = 0; m < 27; m++)
+	for (auto m = 0; m < 27; ++m)
 	{
-		cellID = particlePos2cellIdx(cellPos + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
+		const auto cellID = particlePos2cellIdx(cellPos + make_int3(m / 9 - 1, (m % 9) / 3 - 1, m % 3 - 1), cellSize);
 		contributeBoundaryKernel(&mass[i], i, cellID, pos, cellStart, cellSize, radius);
 	}
 	mass[i] = rhoB / fmaxf(EPSILON, mass[i]);
 	return;
 }
 
-void SPHSystem::computeBoundaryMass() {
+void SPHSystem::computeBoundaryMass()
+{
 	computeBoundaryMass_CUDA <<<(_boundaries->size() - 1) / block_size + 1, block_size >>> (
 		_boundaries->getMassPtr(), _boundaries->getPosPtr(), _boundaries->size(),
 		cellStartBoundary.addr(), _cellSize, _sphCellLength, _sphRhoBoundary, _sphSmoothingRadius);
