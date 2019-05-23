@@ -20,13 +20,16 @@
 
 template <typename T>
 class DArray {
+	static_assert(
+		std::is_same<T, float3>::value || std::is_same<T, float>::value || 
+		std::is_same<T, int>::value, "DArray must be of int, float or float3.");
 public:
 	explicit DArray(const unsigned int length) :
 		_length(length),
  		d_array([length]() {
 		T* ptr; 
 		CUDA_CALL(cudaMalloc((void**)& ptr, sizeof(T) * length));
-		std::shared_ptr<T> t(new(ptr)T[length], [&](T* ptr) {CUDA_CALL(cudaFree(ptr)); });
+		std::shared_ptr<T> t(new(ptr)T[length], [](T* ptr) {CUDA_CALL(cudaFree(ptr)); });
  		return t;
 	}()) {
 		this->clear();
@@ -43,7 +46,7 @@ public:
 	void clear()
 	{ CUDA_CALL(cudaMemset(this->addr(), 0, sizeof(T) * this->length())); }
 	
-	~DArray() noexcept {	d_array.~shared_ptr(); }
+	~DArray() noexcept { d_array.~shared_ptr(); }
 
 private:
 	const unsigned int _length;
