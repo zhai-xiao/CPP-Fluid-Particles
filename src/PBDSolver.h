@@ -52,7 +52,7 @@ public:
 		initializePosLast(particles->getPos());
 	}
 
-	virtual ~PBDSolver() {
+	virtual ~PBDSolver() noexcept {
 		bufferInt.~DArray();
 		bufferFloat3.~DArray();
 		bufferFloat.~DArray();

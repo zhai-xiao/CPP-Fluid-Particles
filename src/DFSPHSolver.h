@@ -37,9 +37,10 @@ public:
 		densityErrorThreshold(defaultDensityErrorThreshold),
 		divergenceErrorThreshold(defaultDivergenceErrorThreshold), 
 		maxIter(defaultMaxIter){}
-	virtual ~DFSPHSolver() {
+	virtual ~DFSPHSolver() noexcept {
 		alpha.~DArray();
 		bufferFloat.~DArray();
+		bufferInt.~DArray();
 		error.~DArray();
 		denWarmStiff.~DArray();
 	}
@@ -50,15 +51,15 @@ protected:
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
 		const float rho0, const int3 cellSize, const float cellLength, const float radius, const float dt,
 		const float errorThreshold, const int maxIter);
-	virtual void computeDensityAlpha(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
+
+private:
+	void computeDensityAlpha(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, 
 		const int3 cellSize, const float cellLength, const float radius);
-	virtual int correctDivergenceError(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
+	int correctDivergenceError(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
 		const float rho0, const int3 cellSize, const float cellLength, const float radius, const float dt,
 		const float errorThreshold, const int maxIter);
-
-private:
 	DArray<float> alpha;
 	DArray<float> bufferFloat;
 	DArray<int> bufferInt;

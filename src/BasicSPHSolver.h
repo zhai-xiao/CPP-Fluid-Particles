@@ -25,10 +25,10 @@ public:
 		const float rho0, const float rhoB, const float stiff, const float visc, const float3 G,
 		const float surfaceTensionIntensity, const float airPressure) override;
 	explicit BasicSPHSolver(const int num) :bufferFloat3(num) {}
-	virtual ~BasicSPHSolver() { bufferFloat3.~DArray(); }
+	virtual ~BasicSPHSolver() noexcept { bufferFloat3.~DArray(); }
 protected:
-	void force(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 G) override final;
-	void advect(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize) override final;
+	virtual void force(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 G) override final;
+	virtual void advect(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize) override final;
 	virtual void project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float rho0, const float stiff,
 		const int3 cellSize, const float cellLength, const float radius, const float dt);

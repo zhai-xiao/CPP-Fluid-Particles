@@ -50,7 +50,7 @@ public:
 		return mass.addr();
 	}
 
-	virtual ~SPHParticles() {
+	virtual ~SPHParticles() noexcept {
 		pressure.~DArray();
 		density.~DArray();
 		mass.~DArray();

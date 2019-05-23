@@ -59,7 +59,7 @@ public:
 	const std::shared_ptr<SPHParticles> getBoundaries() const {
 		return static_cast<const std::shared_ptr<SPHParticles>>(_boundaries);
 	}
-	~SPHSystem() {
+	~SPHSystem() noexcept {
 		_fluids.~shared_ptr();
 		_boundaries.~shared_ptr();
 		_solver.~shared_ptr();

@@ -117,29 +117,22 @@ void initSPHSystem(const int solver = fluid_solver::PBD) {
 	}
 	auto boundaryParticles = std::make_shared<SPHParticles>(pos);
 	// initiate solver and particle system
+	std::shared_ptr<BaseSolver> pSolver;
 	switch (solver) {
 	case fluid_solver::PBD:
-		pSystem = std::make_shared<SPHSystem>(fluidParticles, boundaryParticles,
-			std::dynamic_pointer_cast<BaseSolver>(std::make_shared<PBDSolver>(fluidParticles->size())),
-			spaceSize, sphCellLength, sphSmoothingRadius, dt, sphM0,
-			sphRho0, sphRhoBoundary, sphStiff, sphVisc, 
-			sphSurfaceTensionIntensity, sphAirPressure, sphG, cellSize);
+		pSolver = std::make_shared<PBDSolver>(fluidParticles->size());
 		break;
 	case fluid_solver::DFSPH:
-		pSystem = std::make_shared<SPHSystem>(fluidParticles, boundaryParticles,
-			std::dynamic_pointer_cast<BaseSolver>(std::make_shared<DFSPHSolver>(fluidParticles->size())),
-			spaceSize, sphCellLength, sphSmoothingRadius, dt, sphM0,
-			sphRho0, sphRhoBoundary, sphStiff, sphVisc, 
-			sphSurfaceTensionIntensity, sphAirPressure, sphG, cellSize);
+		pSolver = std::make_shared<DFSPHSolver>(fluidParticles->size());
 		break;
 	default:
-		pSystem = std::make_shared<SPHSystem>(fluidParticles, boundaryParticles,
-			std::dynamic_pointer_cast<BaseSolver>(std::make_shared<BasicSPHSolver>(fluidParticles->size())),
-			spaceSize, sphCellLength, sphSmoothingRadius, dt, sphM0,
-			sphRho0, sphRhoBoundary, sphStiff, sphVisc, 
-			sphSurfaceTensionIntensity, sphAirPressure, sphG, cellSize);
+		pSolver = std::make_shared<BasicSPHSolver>(fluidParticles->size());
 		break;
 	}	
+	pSystem = std::make_shared<SPHSystem>(fluidParticles, boundaryParticles, pSolver,
+		spaceSize, sphCellLength, sphSmoothingRadius, dt, sphM0,
+		sphRho0, sphRhoBoundary, sphStiff, sphVisc, 
+		sphSurfaceTensionIntensity, sphAirPressure, sphG, cellSize);
 }
 
 void createVBO(GLuint* vbo, const unsigned int length) {
@@ -217,8 +210,8 @@ void motionFunc(const int x, const int y) {
 	}
 	if (mouse_left_down)
 	{
-		rot[0] += (dy * 180.0f) / 720.0f;
-		rot[1] += (dx * 180.0f) / 720.0f;
+		rot[0] += (float(dy) * 180.0f) / 720.0f;
+		rot[1] += (float(dx) * 180.0f) / 720.0f;
 	}
 
 	mousePos[0] = x;
@@ -310,7 +303,7 @@ void oneStep() {
 	const auto milliseconds = pSystem->step();
 	totalTime += milliseconds;
 	printf("Frame %d - %2.2f ms, avg time - %2.2f ms/frame (%3.2f FPS)\r", 
-		frameId%10000, milliseconds, totalTime / frameId, frameId*1000.0f/totalTime);
+		frameId%10000, milliseconds, totalTime / float(frameId), float(frameId)*1000.0f/totalTime);
 }
 
 void displayFunc(void) {
@@ -326,7 +319,7 @@ void displayFunc(void) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(m_fov, double(m_window_h) / double(m_window_h), 0.01, 100.0);
+	gluPerspective(m_fov, 1.0, 0.01, 100.0);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(0, 0, 1.0 / zoom, 0, 0, 0, 0, 1, 0);
