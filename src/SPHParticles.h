@@ -50,12 +50,7 @@ public:
 		return mass.addr();
 	}
 
-	virtual ~SPHParticles() noexcept {
-		pressure.~DArray();
-		density.~DArray();
-		mass.~DArray();
-		particle2Cell.~DArray();
-	}
+	virtual ~SPHParticles() noexcept { }
 
 protected:
 	DArray<float> pressure;

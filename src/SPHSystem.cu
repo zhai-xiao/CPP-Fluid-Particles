@@ -15,10 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with CPP-Fluid-Particles.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-#include <memory>
 #include <cuda_runtime.h>
-#include <vector_types.h>
 #include <helper_math.h>
 #include <thrust/sort.h>
 #include <thrust/scan.h>
@@ -143,10 +140,10 @@ float SPHSystem::step()
 		cudaDeviceSynchronize(); CHECK_KERNEL();
 	}
 	catch (const char* s) {
-		std::cout << s << std::endl;
+		std::cout << s << "\n";
 	}
 	catch (...) {
-		std::cout << "Unknown Exception at "<<__FILE__<<": line "<<__LINE__ << std::endl;
+		std::cout << "Unknown Exception at "<<__FILE__<<": line "<<__LINE__ << "\n";
 	}
 
 	float milliseconds;
