@@ -20,9 +20,9 @@
 class SPHSystem {
 public:
 	SPHSystem(
-		std::shared_ptr<SPHParticles>& fluidParticles,
-		std::shared_ptr<SPHParticles>& boundaryParticles,
-		std::shared_ptr<BaseSolver>& solver,
+		std::shared_ptr<SPHParticles> fluidParticles,
+		std::shared_ptr<SPHParticles> boundaryParticles,
+		std::shared_ptr<BaseSolver> solver,
 		const float3 spaceSize,
 		const float sphCellLength,
 		const float sphSmoothingRadius,
@@ -53,10 +53,10 @@ public:
 	int totalSize() const {
 		return (*_fluids).size() + (*_boundaries).size();
 	}
-	const std::shared_ptr<SPHParticles> getFluids() const {
+	auto getFluids() const {
 		return static_cast<const std::shared_ptr<SPHParticles>>(_fluids);
 	}
-	const std::shared_ptr<SPHParticles> getBoundaries() const {
+	auto getBoundaries() const {
 		return static_cast<const std::shared_ptr<SPHParticles>>(_boundaries);
 	}
 	~SPHSystem() noexcept { }
