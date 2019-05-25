@@ -31,10 +31,10 @@
 #include "DFSPHSolver.h"
 
 void DFSPHSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float3 spaceSize,
-	const int3 cellSize, const float cellLength, const float radius, const float dt,
-	const float rho0, const float rhoB, const float stiff, const float visc, const float3 G,
-	const float surfaceTensionIntensity, const float airPressure)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, float3 spaceSize,
+		int3 cellSize, float cellLength, float radius, float dt,
+		float rho0, float rhoB, float stiff, float visc, float3 G,
+		float surfaceTensionIntensity, float airPressure)
 {
 	// the order of steps is slighted adjusted to accomodate the call from step() in SPHSystem.cu
 
@@ -158,9 +158,9 @@ __global__ void correctDensityError_CUDA(float3* velFluid, float3* posFluid, flo
 }
 
 int DFSPHSolver::project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
-	const float rho0, const int3 cellSize, const float cellLength, const float radius, const float dt,
-	const float errorThreshold, const int maxIter)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
+		float rho0, int3 cellSize, float cellLength, float radius, float dt,
+		float errorThreshold, int maxIter)
 {
 	int num = fluids->size();
 	auto totalError = std::numeric_limits<float>::max();
@@ -249,7 +249,8 @@ __global__ void computeDensityAlpha_CUDA(float* density, float* alpha,
 }
 
 void DFSPHSolver::computeDensityAlpha(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const int3 cellSize, const float cellLength, const float radius)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
+		int3 cellSize, float cellLength, float radius)
 {
 	computeDensityAlpha_CUDA <<<(fluids->size()-1)/block_size+1, block_size >>> (fluids->getDensityPtr(), alpha.addr(), 
 		fluids->getPosPtr(), fluids->getMassPtr(), fluids->size(), cellStartFluid.addr(), cellSize, 
@@ -328,9 +329,9 @@ __global__ void correctDivergenceError_CUDA(float3* velFluid, float3* posFluid, 
 }
 
 int DFSPHSolver::correctDivergenceError(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
-	const float rho0, const int3 cellSize, const float cellLength, const float radius, const float dt, 
-	const float errorThreshold, const int maxIter)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
+		float rho0, int3 cellSize, float cellLength, float radius, float dt,
+		float errorThreshold, int maxIter)
 {
 	int num = fluids->size();
 	auto totalError = std::numeric_limits<float>::max();

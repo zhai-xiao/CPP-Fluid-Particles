@@ -20,22 +20,22 @@
 class SPHSystem {
 public:
 	SPHSystem(
-		std::shared_ptr<SPHParticles>& fluidParticles,
-		std::shared_ptr<SPHParticles>& boundaryParticles,
-		std::shared_ptr<BaseSolver>& solver,
-		const float3 spaceSize,
-		const float sphCellLength,
-		const float sphSmoothingRadius,
-		const float dt,
-		const float sphM0,
-		const float sphRho0,
-		const float sphRhoBoundary,
-		const float sphStiff,
-		const float sphVisc,
-		const float sphSurfaceTensionIntensity,
-		const float sphAirPressure,
-		const float3 sphG,
-		const int3 cellSize);
+		std::shared_ptr<SPHParticles> fluidParticles,
+		std::shared_ptr<SPHParticles> boundaryParticles,
+		std::shared_ptr<BaseSolver> solver,
+		float3 spaceSize,
+		float sphCellLength,
+		float sphSmoothingRadius,
+		float dt,
+		float sphM0,
+		float sphRho0,
+		float sphRhoBoundary,
+		float sphStiff,
+		float sphVisc,
+		float sphSurfaceTensionIntensity,
+		float sphAirPressure,
+		float3 sphG,
+		int3 cellSize);
 	SPHSystem(const SPHSystem&) = delete;
 	SPHSystem& operator=(const SPHSystem&) = delete;
 
@@ -53,10 +53,10 @@ public:
 	int totalSize() const {
 		return (*_fluids).size() + (*_boundaries).size();
 	}
-	const std::shared_ptr<SPHParticles> getFluids() const {
+	auto getFluids() const {
 		return static_cast<const std::shared_ptr<SPHParticles>>(_fluids);
 	}
-	const std::shared_ptr<SPHParticles> getBoundaries() const {
+	auto getBoundaries() const {
 		return static_cast<const std::shared_ptr<SPHParticles>>(_boundaries);
 	}
 	~SPHSystem() noexcept { }

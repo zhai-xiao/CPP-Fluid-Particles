@@ -72,7 +72,7 @@ __global__ void computeDensity_CUDA(float* density, const int num,
 }
 
 void BasicSPHSolver::computeDensity(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const int3 cellSize, const float cellLength, const float radius) const
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, int3 cellSize, float cellLength, float radius) const
 {
 	int num = fluids->size();
 	thrust::fill(thrust::device, fluids->getDensityPtr(), fluids->getDensityPtr() + num, 0);
@@ -95,7 +95,7 @@ __global__ void enforceBoundary_CUDA(float3* pos, float3* vel, const int num, co
 	return;
 }
 
-void BasicSPHSolver::advect(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize) {
+void BasicSPHSolver::advect(std::shared_ptr<SPHParticles>& fluids, float dt, float3 spaceSize) {
 	fluids->advect(dt);
 	enforceBoundary_CUDA <<<((fluids->size())-1)/block_size+1, block_size >>> (fluids->getPosPtr(), fluids->getVelPtr(), fluids->size(), spaceSize);
 }
@@ -165,8 +165,8 @@ __global__ void pressureForce_CUDA(float3* velFluid, float3* posFluid, float* ma
 }
 
 void BasicSPHSolver::project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float rho0, const float stiff,
-	const int3 cellSize, const float cellLength, const float radius, const float dt)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, float rho0, float stiff,
+		int3 cellSize, float cellLength, float radius, float dt)
 {
 	int num = fluids->size();
 	// step 1:: calculate density
@@ -209,8 +209,8 @@ __global__ void viscosity_CUDA(float3* deltaV, float3* vel, float3* pos,
 }
 
 void BasicSPHSolver::diffuse(std::shared_ptr<SPHParticles>& fluids, const DArray<int>& cellStartFluid,
-	const int3 cellSize, const float cellLength, const float rho0, 
-	const float radius, const float visc, const float dt)
+		int3 cellSize, float cellLength, float rho0,
+		float radius, float visc, float dt)
 {
 	int num = fluids->size();
 	viscosity_CUDA <<<(num - 1) / block_size + 1, block_size >>> (bufferFloat3.addr(), fluids->getVelPtr(), fluids->getPosPtr(),
@@ -224,7 +224,7 @@ void BasicSPHSolver::diffuse(std::shared_ptr<SPHParticles>& fluids, const DArray
 	);
 }
 
-void BasicSPHSolver::force(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 G)
+void BasicSPHSolver::force(std::shared_ptr<SPHParticles>& fluids, float dt, float3 G)
 {
 	const auto dv = dt * G;
 	thrust::transform(thrust::device,
@@ -235,10 +235,10 @@ void BasicSPHSolver::force(std::shared_ptr<SPHParticles>& fluids, const float dt
 }
 
 void BasicSPHSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float3 spaceSize,
-	const int3 cellSize, const float cellLength, const float radius, const float dt,
-	const float rho0, const float rhoB, const float stiff, const float visc, const float3 G,
-	const float surfaceTensionIntensity, const float airPressure)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, float3 spaceSize,
+		int3 cellSize, float cellLength, float radius, float dt,
+		float rho0, float rhoB, float stiff, float visc, float3 G,
+		float surfaceTensionIntensity, float airPressure)
 {
 	// step 1: non-pressure, non-viscosity force
 	force(fluids, dt, G);
@@ -259,10 +259,10 @@ void BasicSPHSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shar
 	advect(fluids, dt, spaceSize);
 }
 
-void BasicSPHSolver::handleSurface(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries, 
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, 
-	const float rho0, const float rhoB, const int3 cellSize, const float cellLength, const float radius,
-	const float dt, const float surfaceTensionIntensity, const float airPressure)
+void BasicSPHSolver::handleSurface(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
+		float rho0, float rhoB, int3 cellSize, float cellLength, float radius,
+		float dt, float surfaceTensionIntensity, float airPressure)
 {
 	// the free surface handling method is from
 	// [2014][TOG][Robust Simulation of Small-Scale Thin Features in SPH-based Free Surface Flows]
@@ -317,10 +317,9 @@ __global__ void computeColorGrad_CUDA(float3* colorGrad, float3* posFluid, float
 	return;
 }
 
-void BasicSPHSolver::surfaceDetection(DArray<float3>& colorGrad,
-	const std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
-	const float rho0, const float rhoB, const int3 cellSize, const float cellLength, const float radius)
+void BasicSPHSolver::surfaceDetection(DArray<float3>& colorGrad, const std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
+		float rho0, float rhoB, int3 cellSize, float cellLength, float radius)
 {
 	computeColorGrad_CUDA <<<(fluids->size()-1)/block_size+1, block_size>>> (colorGrad.addr(),
 	                                                                         fluids->getPosPtr(), fluids->getMassPtr(), fluids->size(), cellStartFluid.addr(), 
@@ -370,9 +369,9 @@ __global__ void surfaceTensionAndAirPressure_CUDA(float3* vel, float3* pos_fluid
 	return;
 }
 
-void BasicSPHSolver::applySurfaceEffects(std::shared_ptr<SPHParticles>& fluids, const DArray<float3>& colorGrad, 
-	const DArray<int>& cellStartFluid, const float rho0, const int3 cellSize, const float cellLength, 
-	const float radius, const float dt, const float surfaceTensionIntensity, const float airPressure)
+void BasicSPHSolver::applySurfaceEffects(std::shared_ptr<SPHParticles>& fluids, const DArray<float3>& colorGrad,
+		const DArray<int>& cellStartFluid, float rho0, int3 cellSize, float cellLength,
+		float radius, float dt, float surfaceTensionIntensity, float airPressure)
 {
 	int num = fluids->size();
 	surfaceTensionAndAirPressure_CUDA <<<(num - 1) / block_size + 1, block_size>>> (fluids->getVelPtr(),

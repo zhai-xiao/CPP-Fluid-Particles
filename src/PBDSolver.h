@@ -20,14 +20,14 @@
 class PBDSolver final : public BasicSPHSolver {
 public:
 	virtual void step(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float3 spaceSize,
-		const int3 cellSize, const float cellLength, const float radius, const float dt,
-		const float rho0, const float rhoB, const float stiff, const float visc, const float3 G,
-		const float surfaceTensionIntensity, const float airPressure) override;
-	explicit PBDSolver(const int num,
-		const int defaultMaxIter = 20,
-		const float defaultXSPH_c = 0.05f,
-		const float defaultRelaxation = 0.75f)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, float3 spaceSize,
+		int3 cellSize, float cellLength, float radius, float dt,
+		float rho0, float rhoB, float stiff, float visc, float3 G,
+		float surfaceTensionIntensity, float airPressure) override;
+	explicit PBDSolver(int num,
+		int defaultMaxIter = 20,
+		float defaultXSPH_c = 0.05f,
+		float defaultRelaxation = 0.75f)
 		:BasicSPHSolver(num),
 		maxIter(defaultMaxIter),
 		xSPH_c(defaultXSPH_c),
@@ -37,10 +37,10 @@ public:
 		bufferFloat3(num),
 		bufferFloat(num) {}
 
-	explicit PBDSolver(std::shared_ptr<SPHParticles>& particles,
-		const int defaultMaxIter = 20,
-		const float defaultXSPH_c = 0.1f,
-		const float defaultRelaxation = 1.0f)
+	explicit PBDSolver(const std::shared_ptr<SPHParticles>& particles,
+		int defaultMaxIter = 20,
+		float defaultXSPH_c = 0.1f,
+		float defaultRelaxation = 1.0f)
 		:BasicSPHSolver(particles->size()),
 		maxIter(defaultMaxIter),
 		xSPH_c(defaultXSPH_c),
@@ -65,13 +65,13 @@ protected:
 	// overwrite and hide the project function in BasicSPHSolver
 	virtual int project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
 	                    const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
-	                    const float rho0, const int3 cellSize, const float3 spaceSize, const float cellLength,
-	                    const float radius, const int maxIter);
+	                    float rho0, int3 cellSize, float3 spaceSize, float cellLength,
+	                    float radius, int maxIter);
 
 	// overwrite and hide the diffuse function in BasicSPHSolver, apply XSPH viscosity
 	virtual void diffuse(std::shared_ptr<SPHParticles>& fluids, const DArray<int>& cellStartFluid,
-	                     const int3 cellSize, const float cellLength, const float rho0,
-	                     const float radius, const float visc);
+	                     int3 cellSize, float cellLength, float rho0,
+	                     float radius, float visc);
 
 private:
 	bool posLastInitialized = false;
