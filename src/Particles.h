@@ -19,7 +19,7 @@
 
 class Particles {
 public:
-	explicit Particles::Particles(std::vector<float3>& p)
+	explicit Particles::Particles(const std::vector<float3>& p)
 		:pos(p.size()), vel(p.size()) {
 		CUDA_CALL(cudaMemcpy(pos.addr(), &p[0], sizeof(float3) * p.size(), cudaMemcpyHostToDevice));
 	}
@@ -40,7 +40,7 @@ public:
 		return pos;
 	}
 
-	void advect(const float dt);
+	void advect(float dt);
 
 	virtual ~Particles() noexcept { }
 

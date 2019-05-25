@@ -25,7 +25,7 @@
 #include "DArray.h"
 #include "Particles.h"
 
-void Particles::advect(const float dt)
+void Particles::advect(float dt)
 {	
 	thrust::transform(thrust::device,
 		pos.addr(), pos.addr() + size(),

@@ -32,10 +32,10 @@
 #include "PBDSolver.h"
 
 void PBDSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-	const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, const float3 spaceSize,
-	const int3 cellSize, const float cellLength, const float radius, const float dt,
-	const float rho0, const float rhoB, const float stiff, const float visc, const float3 G,
-	const float surfaceTensionIntensity, const float airPressure)
+		const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary, float3 spaceSize,
+		int3 cellSize, float cellLength, float radius, float dt,
+		float rho0, float rhoB, float stiff, float visc, float3 G,
+		float surfaceTensionIntensity, float airPressure)
 {
 	// the order of steps is slighted adjusted to accomodate the call from step() in SPHSystem.cu
 
@@ -72,7 +72,7 @@ void PBDSolver::step(std::shared_ptr<SPHParticles>& fluids, const std::shared_pt
 	predict(fluids, dt, spaceSize);
 }
 
-void PBDSolver::predict(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize)
+void PBDSolver::predict(std::shared_ptr<SPHParticles>& fluids, float dt, float3 spaceSize)
 {
 	CUDA_CALL(cudaMemcpy(fluidPosLast.addr(), fluids->getPosPtr(), sizeof(float3) * fluids->size(), cudaMemcpyDeviceToDevice));
 	advect(fluids, dt, spaceSize);
@@ -115,8 +115,8 @@ __global__ void XSPHViscosity_CUDA(float3* vel, float3* pos,
 }
 
 void PBDSolver::diffuse(std::shared_ptr<SPHParticles>& fluids, const DArray<int>& cellStartFluid,
-                        const int3 cellSize, const float cellLength, const float rho0,
-                        const float radius, const float visc)
+	                     int3 cellSize, float cellLength, float rho0,
+	                     float radius, float visc)
 {
 	int num = fluids->size();
 	XSPHViscosity_CUDA <<<(num - 1) / block_size + 1, block_size>>> (fluids->getVelPtr(), fluids->getPosPtr(),
@@ -223,9 +223,9 @@ __global__ void enforceBoundary_CUDA(float3* pos, const int num, const float3 sp
 }
 
 int PBDSolver::project(std::shared_ptr<SPHParticles>& fluids, const std::shared_ptr<SPHParticles>& boundaries,
-                       const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
-                       const float rho0, const int3 cellSize, const float3 spaceSize, const float cellLength,
-                       const float radius, const int maxIter)
+	                    const DArray<int>& cellStartFluid, const DArray<int>& cellStartBoundary,
+	                    float rho0, int3 cellSize, float3 spaceSize, float cellLength,
+	                    float radius, int maxIter)
 {
 	int num = fluids->size();
 	auto iter = 0;
