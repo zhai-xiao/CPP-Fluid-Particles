@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CPP-Fluid-Particles.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <vector>
+#include <memory>
 #include <cuda_runtime.h>
 #include <helper_math.h>
 #include <thrust/sort.h>

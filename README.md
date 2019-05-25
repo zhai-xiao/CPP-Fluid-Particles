@@ -14,7 +14,7 @@ Right: PBD, dt = 0.004 s,  avg performance = 11.3 ms/frame (88.5 FPS)
 * CUDA (7.5 or above)
 * OpenGL (normally comes with CUDA Samples)
 
-&#x1F536;__Important Note: Due to the use of several C++ lambda functions in Thrust calls, it's necessary to specify '--expt-extended-lambda' on the nvcc compile command line. Besides, the helper_math.h used in the code can be found in CUDA Samples along with the OpenGL headers.__&#x1F536;  
+&#x1F536;__Important Note (if you are not using CMake): Due to the use of several C++ lambda functions in Thrust calls, it's necessary to specify '--expt-extended-lambda' on the nvcc compile command line. Besides, the helper_math.h used in the code can be found in CUDA Samples along with the OpenGL headers.__&#x1F536;  
 I used Visual Studio 2019 Preview and CUDA 10.1 to develop the code on a Windows PC with an Nvidia GTX 980 Ti GPU. I also tested the code (without any changes) on another Windows PC with an Nvidia GTX 1070 GPU and CUDA 8.0 installed. Different platforms may need changes on the code.
 
 ## Brief Description of the Program
@@ -39,6 +39,7 @@ SPHParticles objects (derived from the Particles) are responsible for storing th
 The particle is efficiently rendered using OpenGL's vertex shader and fragment shader (via a technique similar to the point sprites). The color of particles indicates their density. Specifically, magenta means the particle is compressed and holds a higher density than the balance state, while on the opposite, navy means the particle has lower density.  
 
 ## Additional Note
+&#x1F536;__This issue is automatically addressed if you are using CMake with the latest commit.__&#x1F536;  
 There seems to be a bug that prevents CUDA 10.1 from working perfectly with Visual Studio 2019 Preview. The host compiler and nvcc write to 'vc142.pdb' at the same time, and the building process would quit erroneously when this happens. To avoid such situation, consider using '/MP' flag in the host compile command line and add '/FS' in 'Project Properties' - 'CUDA C/C++' - 'Host' - 'Additional Compiler Options'.
 
 ## Reference
