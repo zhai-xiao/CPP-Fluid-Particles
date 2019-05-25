@@ -59,12 +59,12 @@ namespace ShaderUtility {
 			file.seekg (0, std::ios::beg);
 			file.read (memblock, size);
 			file.close();
-			//cout << "file " << fname << " loaded" << endl;
+			//cout << "file " << fname << " loaded" << "\n";
 			text.assign(memblock);
 		}
 		else
 		{
-			std::cout << "Unable to open file " << fname << std::endl;
+			std::cout << "Unable to open file " << fname << "\n";
 			exit(1);
 		}
 		return memblock;
@@ -87,7 +87,7 @@ namespace ShaderUtility {
 			const auto infoLog = new GLchar[infoLogLen];
 			// error check for fail to allocate memory omitted
 			glGetShaderInfoLog(shader,infoLogLen, &charsWritten, infoLog);
-			std::cout << "InfoLog:" << std::endl << infoLog << std::endl;
+			std::cout << "InfoLog:\n" << infoLog << "\n";
 			delete [] infoLog;
 		}
 
@@ -108,7 +108,7 @@ namespace ShaderUtility {
 			const auto infoLog = new GLchar[infoLogLen];
 			// error check for fail to allocate memory omitted
 			glGetProgramInfoLog(prog,infoLogLen, &charsWritten, infoLog);
-			std::cout << "InfoLog:" << std::endl << infoLog << std::endl;
+			std::cout << "InfoLog:\n" << infoLog << "\n";
 			delete [] infoLog;
 		}
 	}
@@ -135,7 +135,7 @@ namespace ShaderUtility {
 		glGetShaderiv(v, GL_COMPILE_STATUS, &compiled);
 		if (!compiled)
 		{
-			std::cout << "Vertex shader not compiled." << std::endl;
+			std::cout << "Vertex shader not compiled.\n";
 			printShaderInfoLog(v);
 			system("PAUSE");
 		} 
@@ -144,7 +144,7 @@ namespace ShaderUtility {
 		glGetShaderiv(f, GL_COMPILE_STATUS, &compiled);
 		if (!compiled)
 		{
-			std::cout << "Fragment shader not compiled." << std::endl;
+			std::cout << "Fragment shader not compiled.\n";
 			printShaderInfoLog(f);
 			system("PAUSE");
 		} 
@@ -165,7 +165,7 @@ namespace ShaderUtility {
 		glGetProgramiv(program,GL_LINK_STATUS, &linked);
 		if (!linked) 
 		{
-			std::cout << "Program did not link." << std::endl;
+			std::cout << "Program did not link.\n";
 			printLinkInfoLog(program);
 		}
 	}

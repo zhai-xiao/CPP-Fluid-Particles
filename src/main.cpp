@@ -21,7 +21,6 @@
 #include <cuda_runtime.h>
 #include <helper_math.h>
 #include <GL/freeglut.h>
-#include <cmath>
 #include <vector>
 #include <memory>
 #include "ShaderUtility.h"
@@ -160,7 +159,7 @@ void deleteVBO(GLuint* vbo) {
 void onClose(void) {
 	deleteVBO(&particlesVBO);
 	deleteVBO(&particlesColorVBO);
-	pSystem.~shared_ptr();
+	pSystem = nullptr;
 	CUDA_CALL(cudaDeviceReset());
 	exit(0);
 }
@@ -386,7 +385,7 @@ int main(int argc, char* argv[]) {
 		glutMainLoop();
 	}
 	catch (...) {
-		std::cout << "Unknown Exception at " << __FILE__ << ": line " << __LINE__ << std::endl;
+		std::cout << "Unknown Exception at " << __FILE__ << ": line " << __LINE__ << "\n";
 	}
 	return 0;
 }

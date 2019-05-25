@@ -42,10 +42,7 @@ public:
 
 	void advect(const float dt);
 
-	virtual ~Particles() noexcept { 
-		pos.~DArray(); 
-		vel.~DArray();
-	}
+	virtual ~Particles() noexcept { }
 
 protected:
 	DArray<float3> pos;

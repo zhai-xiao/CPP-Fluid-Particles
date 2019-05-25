@@ -52,12 +52,7 @@ public:
 		initializePosLast(particles->getPos());
 	}
 
-	virtual ~PBDSolver() noexcept {
-		bufferInt.~DArray();
-		bufferFloat3.~DArray();
-		bufferFloat.~DArray();
-		fluidPosLast.~DArray();
-	}
+	virtual ~PBDSolver() noexcept {	}
 
 	void initializePosLast(const DArray<float3>& posFluid) {
 		CUDA_CALL(cudaMemcpy(fluidPosLast.addr(), posFluid.addr(), sizeof(float3) * fluidPosLast.length(), cudaMemcpyDeviceToDevice));

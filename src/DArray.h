@@ -46,7 +46,7 @@ public:
 	void clear()
 	{ CUDA_CALL(cudaMemset(this->addr(), 0, sizeof(T) * this->length())); }
 	
-	~DArray() noexcept { d_array.~shared_ptr(); }
+	~DArray() noexcept { }
 
 private:
 	const unsigned int _length;

@@ -59,17 +59,10 @@ public:
 	const std::shared_ptr<SPHParticles> getBoundaries() const {
 		return static_cast<const std::shared_ptr<SPHParticles>>(_boundaries);
 	}
-	~SPHSystem() noexcept {
-		_fluids.~shared_ptr();
-		_boundaries.~shared_ptr();
-		_solver.~shared_ptr();
-		cellStartFluid.~DArray();
-		cellStartBoundary.~DArray();
-		bufferInt.~DArray();
-	}
+	~SPHSystem() noexcept { }
 private:
 	std::shared_ptr<SPHParticles> _fluids;
-	std::shared_ptr<SPHParticles> _boundaries;
+	const std::shared_ptr<SPHParticles> _boundaries;
 	std::shared_ptr<BaseSolver> _solver;
 	DArray<int> cellStartFluid;
 	DArray<int> cellStartBoundary;

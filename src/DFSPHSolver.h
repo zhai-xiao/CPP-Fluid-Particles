@@ -37,13 +37,7 @@ public:
 		densityErrorThreshold(defaultDensityErrorThreshold),
 		divergenceErrorThreshold(defaultDivergenceErrorThreshold), 
 		maxIter(defaultMaxIter){}
-	virtual ~DFSPHSolver() noexcept {
-		alpha.~DArray();
-		bufferFloat.~DArray();
-		bufferInt.~DArray();
-		error.~DArray();
-		denWarmStiff.~DArray();
-	}
+	virtual ~DFSPHSolver() noexcept { }
 protected:
 	// overwrite and hide the project function in BasicSPHSolver
 	// in project, correct density error from alpha

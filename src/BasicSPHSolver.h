@@ -25,7 +25,7 @@ public:
 		const float rho0, const float rhoB, const float stiff, const float visc, const float3 G,
 		const float surfaceTensionIntensity, const float airPressure) override;
 	explicit BasicSPHSolver(const int num) :bufferFloat3(num) {}
-	virtual ~BasicSPHSolver() noexcept { bufferFloat3.~DArray(); }
+	virtual ~BasicSPHSolver() noexcept { }
 protected:
 	virtual void force(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 G) override final;
 	virtual void advect(std::shared_ptr<SPHParticles>& fluids, const float dt, const float3 spaceSize) override final;

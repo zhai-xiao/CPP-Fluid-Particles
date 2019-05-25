@@ -18,7 +18,6 @@
 #include <vector>
 #include <memory>
 #include <cuda_runtime.h>
-#include <vector_types.h>
 #include <thrust/fill.h>
 #include <thrust/transform.h>
 #include <thrust/execution_policy.h>
