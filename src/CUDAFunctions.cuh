@@ -23,19 +23,30 @@
 static inline __device__ float cubic_spline_kernel(const float r, const float radius)
 {
 	const auto q = 2.0f * fabs(r) / radius;
-	return (q < EPSILON) ? 0.0f :
-		((q) <= 1.0f ? (powf(2.0f - q, 3) - 4.0f * powf(1.0f - q, 3)) :
-		(q) <= 2.0f ? (powf(2.0f - q, 3)) :
-			0.0f) / (4.0f * PI * powf(radius, 3));
+	//return (q < EPSILON) ? 0.0f :
+	//	((q) <= 1.0f ? (powf(2.0f - q, 3) - 4.0f * powf(1.0f - q, 3)) :
+	//	(q) <= 2.0f ? (powf(2.0f - q, 3)) :
+	//		0.0f) / (4.0f * PI * powf(radius, 3));
+	if (q > 2.0f || q < EPSILON) return 0.0f;
+	else {
+		const auto a = 0.25f / (PI * radius * radius * radius);
+		return a * ((q > 1.0f) ? (q * (q * (6.0f - q) - 12.0f) + 8.0f) : ((3.0f * q - 6.0f) * q * q + 4.0f));
+	}
 }
 
 static inline __device__ float3 cubic_spline_kernel_gradient(const float3 r, const float radius)
 {
 	const auto q = 2.0f * length(r) / radius;
-	return
-		((q) <= 1.0f ? -(3.0f * (2.0f - q) * (2.0f - q) - 12.0f * (1.0f - q) * (1.0f - q)) :
-		(q) <= 2.0f ? -(3.0f * (2.0f - q) * (2.0f - q)) :
-			0.0f) / (2.0f * PI * powf(radius, 4)) * r / fmaxf(EPSILON, length(r));
+	//return
+	//	((q) <= 1.0f ? -(3.0f * (2.0f - q) * (2.0f - q) - 12.0f * (1.0f - q) * (1.0f - q)) :
+	//	(q) <= 2.0f ? -(3.0f * (2.0f - q) * (2.0f - q)) :
+	//		0.0f) / (2.0f * PI * powf(radius, 4)) * r / fmaxf(EPSILON, length(r));
+	if (q > 2.0f) return make_float3(0.0f);
+	else {
+		//const auto a = r / ((length(r) + EPSILON) * 2.0f * PI * radius * radius * radius * radius);
+		const auto a = r / (PI * (q + EPSILON) * radius * radius * radius * radius * radius);
+		return a * ((q > 1.0f) ? ((12.0f - 3.0f * q) * q - 12.0f) : ((9.0f * q - 12.0f) * q));
+	}
 }
 
 static inline __device__ float viscosity_kernel_laplacian(const float r, const float radius) {
@@ -71,9 +82,17 @@ static __global__ void mapParticles2Cells_CUDA(int* particles2cells, float3* pos
 inline __device__ float3 surface_tension_kernel_gradient(float3 r, const float radius)
 {
 	const auto x = length(r);
-	return
-		(x < EPSILON) ? make_float3(0.0f) : (
-			2.0f * x <= radius ? 2.0f * powf((radius - x), 3) * powf(x,3) - 0.0156f * powf(radius, 6) :
-			x <= radius ? powf((radius - x), 3) * powf(x, 3) :
-			0.0f) * 136.0241f / (PI * powf(radius, 9)) * -r / fmaxf(EPSILON, x);
+	//return
+	//	(x < EPSILON) ? make_float3(0.0f) : (
+	//		2.0f * x <= radius ? 2.0f * powf((radius - x), 3) * powf(x, 3) - 0.0156f * powf(radius, 6) :
+	//		x <= radius ? powf((radius - x), 3) * powf(x, 3) :
+	//		0.0f) * 136.0241f / (PI * powf(radius, 9)) * -r / fmaxf(EPSILON, x);
+	if (x > radius || x < EPSILON) return make_float3(0.0f);
+	else {
+		auto cube = [](float x) {return x * x * x; };
+		const float3 a = 136.0241f * -r / (PI * cube(radius) * cube(radius) * cube(radius) * x);
+		return a * ((2.0f * x <= radius) ?
+			(2.0f * cube(radius - x) * cube(x) - 0.0156f * cube(radius) * cube(radius)) :
+			(cube(radius - x) * cube(x)));
+	}
 }
