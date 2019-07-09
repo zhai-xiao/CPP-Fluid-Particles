@@ -30,7 +30,7 @@ static inline __device__ float cubic_spline_kernel(const float r, const float ra
 	if (q > 2.0f || q < EPSILON) return 0.0f;
 	else {
 		const auto a = 0.25f / (PI * radius * radius * radius);
-		return a * ((q > 1.0f) ? (q * (q * (6.0f - q) - 12.0f) + 8.0f) : ((3.0f * q - 6.0f) * q * q + 4.0f));
+		return a * ((q > 1.0f) ? (2.0f - q) * (2.0f - q) * (2.0f - q) : ((3.0f * q - 6.0f) * q * q + 4.0f));
 	}
 }
 
