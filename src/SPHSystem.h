@@ -20,9 +20,9 @@
 class SPHSystem {
 public:
 	SPHSystem(
-		std::shared_ptr<SPHParticles> fluidParticles,
-		std::shared_ptr<SPHParticles> boundaryParticles,
-		std::shared_ptr<BaseSolver> solver,
+		std::shared_ptr<SPHParticles>& fluidParticles,
+		std::shared_ptr<SPHParticles>& boundaryParticles,
+		std::shared_ptr<BaseSolver>& solver,
 		float3 spaceSize,
 		float sphCellLength,
 		float sphSmoothingRadius,

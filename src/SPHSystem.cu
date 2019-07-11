@@ -31,9 +31,9 @@
 #include "SPHSystem.h"
 
 SPHSystem::SPHSystem(
-	std::shared_ptr<SPHParticles> fluidParticles,
-	std::shared_ptr<SPHParticles> boundaryParticles,
-	std::shared_ptr<BaseSolver> solver,
+	std::shared_ptr<SPHParticles>& fluidParticles,
+	std::shared_ptr<SPHParticles>& boundaryParticles,
+	std::shared_ptr<BaseSolver>& solver,
 	const float3 spaceSize,
 	const float sphCellLength,
 	const float sphSmoothingRadius,
